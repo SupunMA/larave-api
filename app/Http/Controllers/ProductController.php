@@ -9,7 +9,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        return Product::all();
+        return response()->json(Product::all());
     }
 
 
@@ -27,30 +27,50 @@ class ProductController extends Controller
     }
 
 
-    public function show(Request $product)
+    public function show($id)
     {
-        return response()->json($product,200);
+        // Fetch the product using the $id
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        return response()->json($product, 200);
     }
 
 
     public function update(Request $request, Product $product)
     {
          $validated = $request->validate([
-        'name' => 'sometimes|max:255',
-        'description' => 'sometimes',
-        'price' => 'sometimes|numeric',
+        'name' => 'required|max:255',
+        'description' => 'required',
+        'price' => 'numeric',
     ]);
 
-        $product->update($validated);
 
+
+    if($product){
+        
+        $product->update($validated);
         return response()->json($product, 200);
+    }else{
+        return response()->json(['message' => 'Product not found'], 404);
+    }
+
     }
 
 
     public function destroy(Product $product)
     {
-        $product->delete();
-        return response('Deleted', 200);
+        if($product){
+            $product->delete();
+            return response('Deleted', 204);
+        }else{
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+
     }
 
 }
